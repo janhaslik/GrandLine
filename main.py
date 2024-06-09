@@ -1,11 +1,18 @@
 import pandas as pd
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from data import db
 
 from model import model, predict
 
 app = Flask(__name__)
+app.config["APPLICATION_ROOT"] = "/api"
+cors = CORS(app, resource={r"/api/*": {"origins": "*"}})
 
+model_types = {
+    'LSTM': model.LSTM_Model,
+    'ARIMA': model.ARIMA_Model,
+}
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -37,45 +44,54 @@ def login():
 
 @app.route('/models', methods=['POST'])
 def create_model():
-    model_name = request.json['model_name']
-    model_type = request.json['model_type']
-    data_path = request.json['data_path']
-    userid = request.json['userid']
+    try:
+        model_name = request.json['model_name']
+        model_type = request.json['model_type']
+        data_path = request.json['data_path']
+        userid = request.json['userid']
 
-    model_types = {
-        'LSTM': model.LSTM_Model,
-        'ARIMA': model.ARIMA_Model,
-    }
+        if model_type in model_types:
+            # Add to db
+            res = db.insert_model(model_name, model_type, data_path, userid)
+            if res["status"] == "success":
+                return jsonify({"status": "Model created successfully", "model_id": res["model_id"]}), 200
+            else:
+                return jsonify({"status": "fail", "message": res["message"]}), 400
+        else:
+            return jsonify({"status": "fail", "message": "Model type not supported"}), 400
+    except KeyError as e:
+        return jsonify({"status": "fail", "message": f"Missing key in request JSON: {e}"}), 400
+    except Exception as e:
+        return jsonify({"status": "fail", "message": f"An error occurred: {e}"}), 500
 
-    if model_type in model_types:
 
-        # Add to db
-        res = db.insert_model(model_name, model_type, data_path, userid)
+@app.route('/models', methods=['GET'])
+def get_models():
+    userid = request.args.get('userid')
 
-        if res == 400:
-            return jsonify({'status': 'fail', 'message': 'Model already exists'}), 400
+    models = db.get_models(userid)
 
-        return jsonify({"status": "Model created successfully", "model": res}), 200
-    else:
-        return jsonify({"error": "Model type not supported"}), 404
+    if models == 403:
+        return jsonify({"status": "fail", "message": "You do not have permission to access this resource"}),403
+    elif models == 404:
+        return jsonify({"status": "fail", "message": "No models found"}),404
+
+    return jsonify({"status": "success", "models": models}), 200
 
 
 @app.route('/models/deploy', methods=['POST'])
 def deploy():
-    model_types = {
-        'LSTM': model.LSTM_Model,
-        'ARIMA': model.ARIMA_Model,
-    }
-
     model_id = request.json['model_id']
     model_type, data_path = db.get_model(model_id)
     data = pd.read_csv(data_path)
     model_class = model_types[model_type]
     model_instance = model_class(model_id, data)
-    model_instance.train_model()
+    model_instance.train_model(epochs=2)
+
+    # Set status in db to deployed
+    db.deploy_model(model_id)
 
     return jsonify({"status": "Model deployed successfully"}), 200
-    # return jsonify({"error": "Model instance failed"}), 500
 
 
 @app.route('/models/forecast', methods=['POST'])
