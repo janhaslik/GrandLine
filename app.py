@@ -87,7 +87,6 @@ def create_model():
 @jwt_required()
 def get_models():
     userid = get_jwt_identity()
-    print(userid)
     models = db.get_models(userid)
 
     if models == 403:
@@ -117,6 +116,12 @@ def delete_model():
         return jsonify({"status": "fail", "message": f"An error occurred: {e}"}), 500
 
 
+@app.route('/api/models/dataset', methods=['POST'])
+def upload_dataset():
+
+    return jsonify({"status": "success", "message": "Dataset uploaded successfully"}), 200
+
+
 @app.route('/api/models/deploy', methods=['POST'])
 @jwt_required()
 def deploy():
@@ -126,7 +131,7 @@ def deploy():
     data = pd.read_csv(data_path)
     model_class = model_types[model_type]
     model_instance = model_class(model_id, data)
-    model_instance.train_model(epochs=2)
+    model_instance.train_model()
 
     # Set status in db to deployed
     db.deploy_model(model_id)
@@ -145,11 +150,10 @@ def forecast():
 
     if model_type is not None and data_path is not None:
         data = pd.read_csv(data_path)
-        print(model_id, model_type, data_path)
 
         if model_type == 'LSTM':
-            predictions = predict.predict_lstm(model_id, data, int(timeline))
-            return jsonify({"predictions": predictions})
+            history, predictions = predict.predict_lstm(model_id, data, int(timeline))
+            return jsonify({"predictions": predictions, "history": predictions}), 200
 
         return jsonify({"error": "Invalid Model Type"})
     else:

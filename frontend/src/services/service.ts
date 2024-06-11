@@ -110,7 +110,7 @@ async function forecast(id: number, timeline: number) {
 
         const data = await response.data;
 
-        return { status: response.status, predictions: data.predictions };
+        return { status: response.status, predictions: data.predictions, history: data.history };
     } catch (error) {
         console.error('Error forecasting model:', error);
         throw error;

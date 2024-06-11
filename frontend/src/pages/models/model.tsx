@@ -4,13 +4,18 @@ import service from "../../services/service";
 
 export default function ModelComponent(props: Model) {
     const [showGraph, setShowGraph] = useState(false);
+    const [predict, setPredict] = useState(false)
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(props.status);
 
     const handleShowForecast = async () => {
         setShowGraph((prev) => !prev);
-        const predictions = await service.forecast(props.id, 100)
-        console.log(predictions)
+        if(!predict){
+            setPredict(true)
+            const predictions = await service.forecast(props.id, 1000)
+            console.log(predictions)
+            setPredict(false)
+        }
     };
 
     const handleDeployModel = async () => {
@@ -58,13 +63,20 @@ export default function ModelComponent(props: Model) {
                 </button>
             ) : (
                 <div>
-                    <button className="show-forecast-button" onClick={handleShowForecast}>
-                        Show Forecast
-                    </button>
-                    {showGraph && (
-                        <div className="forecast-graph">
-                            {/* Forecast graph goes here */}
-                        </div>
+                   
+                    {showGraph ? (
+                        <>
+                            <button className="show-forecast-button" onClick={handleShowForecast}>
+                                Hide Forecast
+                            </button>
+                            <div className="forecast-graph">
+                                {/* Forecast graph goes here */}
+                            </div>
+                        </>
+                    ) : (
+                        <button className="show-forecast-button" onClick={handleShowForecast}>
+                            Show Forecast
+                        </button>
                     )}
                 </div>
             )}
