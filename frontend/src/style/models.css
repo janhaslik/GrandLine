@@ -56,6 +56,13 @@
 
 .model-info {
     display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+}
+
+.model-info-text{
+    display: flex;
     flex-direction: column;
 }
 
@@ -74,6 +81,39 @@
     align-items: center;
     font-size: 16px;
 }
+
+.delete-btn {
+    outline: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: red; /* Set text color to red */
+    background-color: transparent; /* Make background transparent */
+    position: relative; /* Positioning for shine effect */
+    overflow: hidden; /* Hide overflow for shine effect */
+    border-radius: 7px;
+    margin-top: 1em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.delete-btn:hover::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%);
+    transition: transform 0.5s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.delete-btn:hover {
+    color: white; /* Change text color to white on hover */
+    background-color: red; /* Change background color to red on hover */
+}
+
 
 .status-icon-deployed {
     color: green;

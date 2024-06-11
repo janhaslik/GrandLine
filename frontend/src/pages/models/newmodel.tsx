@@ -1,7 +1,6 @@
-import { Button, Modal, Backdrop, Fade, Box, Typography, TextField, MenuItem } from "@mui/material";
+import { Modal, Backdrop, Fade, Box, Typography, TextField, MenuItem } from "@mui/material";
 import Model from "../../interfaces/created_model";
 import { useState } from "react";
-import service from "../../services/service";
 
 export default function NewModel({ onAddModel }: { onAddModel: (model: Model) => void }) {
     const userid = "1" //localStorage.getItem("userid")
@@ -91,10 +90,14 @@ export default function NewModel({ onAddModel }: { onAddModel: (model: Model) =>
                         </TextField>
                         <TextField
                             type="file"
-                            name="datapath"
+                            name="data_path"
                             onChange={handleModelChange}
                             sx={{ mt: 2 }}
                         />
+                        <Box display="flex" flexDirection="row" gap={2} sx={{mt: 2}}>
+                            <TextField type="text" name="data_date" label="Date Field"/>
+                            <TextField type="text" name="data_output" label="Output "/>
+                        </Box>
                         <button className="add-model" onClick={handleAddModel}>Add Model</button>
                     </Box>
                 </Fade>

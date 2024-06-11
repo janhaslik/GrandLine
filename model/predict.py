@@ -24,6 +24,7 @@ def plot(full_dates, actual_prices, predicted_prices, future_dates, future_predi
 
 
 def predict_lstm(model_name, data, forecast_time):
+    print(model_name)
     model = load_model(f'data/models/{model_name}.h5')
     data['date'] = pd.to_datetime(data['date'])
     sequence_length = model.input_shape[1]

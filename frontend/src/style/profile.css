@@ -1,0 +1,36 @@
+.settings-container {
+    padding: 20px;
+  }
+  
+  .settings-header {
+    margin-bottom: 20px;
+  }
+  
+  .settings-options {
+    margin-top: 20px;
+  }
+  
+  .settings-option {
+    display: flex;
+    align-items: center;
+  }
+  
+  .settings-label {
+    flex: 1;
+  }
+  
+  .models-section {
+    margin-top: 30px;
+  }
+  
+  .models-list {
+    margin-top: 10px;
+  }
+  
+  .model-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  

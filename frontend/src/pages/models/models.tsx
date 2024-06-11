@@ -37,9 +37,10 @@ export default function Models() {
             <h3 className="subtitle">View and manage your ML Models</h3>
             <NewModel onAddModel={handleAddModel} />
             <div className="models">
-                {models.map((model, index) => (
+                {models?.map((model, index) => (
                     <ModelComponent 
                         key={index} 
+                        id={model.id}
                         model_name={model.model_name} 
                         model_type={model.model_type} 
                         status={model.status}
