@@ -153,7 +153,7 @@ def forecast():
 
         if model_type == 'LSTM':
             history, predictions = predict.predict_lstm(model_id, data, int(timeline))
-            return jsonify({"predictions": predictions, "history": predictions}), 200
+            return jsonify({"predictions": predictions, "history": history}), 200
 
         return jsonify({"error": "Invalid Model Type"})
     else:

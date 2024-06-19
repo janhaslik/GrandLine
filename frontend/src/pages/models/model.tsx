@@ -1,19 +1,22 @@
 import { useState } from "react";
 import Model from "../../interfaces/saved_model";
 import service from "../../services/service";
+import Forecast from "./forecast";
+import Predictions from "../../interfaces/predictions";
 
 export default function ModelComponent(props: Model) {
     const [showGraph, setShowGraph] = useState(false);
     const [predict, setPredict] = useState(false)
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(props.status);
+    const [predictions, setPredictions] = useState<Predictions>({history: [], predictions: []})
 
     const handleShowForecast = async () => {
         setShowGraph((prev) => !prev);
         if(!predict){
             setPredict(true)
-            const predictions = await service.forecast(props.id, 1000)
-            console.log(predictions)
+            const data = await service.forecast(props.id, 1000)
+            setPredictions({"history": data.history, "predictions": data.predictions})
             setPredict(false)
         }
     };
@@ -70,7 +73,7 @@ export default function ModelComponent(props: Model) {
                                 Hide Forecast
                             </button>
                             <div className="forecast-graph">
-                                {/* Forecast graph goes here */}
+                                <Forecast history={predictions?.history} predictions={predictions?.predictions} loading={predictions.history.length==0}/>
                             </div>
                         </>
                     ) : (

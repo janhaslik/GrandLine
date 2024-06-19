@@ -33,7 +33,6 @@ def predict_lstm(model_name, data, forecast_time):
     data = data.dropna()
     print("Returns: ", data.head())
 
-
     # Check if returns column contains NaN values after dropna
     if data['returns'].isna().any():
         print("NaN values found in 'returns' column after dropna")
@@ -54,9 +53,6 @@ def predict_lstm(model_name, data, forecast_time):
     # Ensure the sequence is in the correct shape
     last_sequence = last_sequence.reshape(1, sequence_length, 2)
 
-    # Print out the last sequence for debugging
-    print("Last Sequence:", last_sequence)
-
     # Predict the future timeline with rolling predictions
     future_predictions = []
     for i in range(forecast_time):
@@ -69,14 +65,8 @@ def predict_lstm(model_name, data, forecast_time):
         last_sequence = np.roll(last_sequence, -1, axis=1)
         last_sequence[0, -1] = new_entry
 
-    # Print out the future predictions (scaled returns) for debugging
-    print("Future Predictions (Scaled Returns):", future_predictions)
-
     # Inverse transform the scaled predictions to get actual returns
     future_returns = scaler.inverse_transform(np.array(future_predictions).reshape(-1, 1)).flatten()
-
-    # Print out the future returns for debugging
-    print("Future Returns:", future_returns)
 
     # Check if future returns contain NaN values
     if np.isnan(future_returns).any():
@@ -95,15 +85,9 @@ def predict_lstm(model_name, data, forecast_time):
     if np.isnan(future_prices).any():
         print("NaN values found in future prices")
 
-    # Print out the future prices for debugging
-    print("Future Prices:", future_prices)
-
     # Generate future dates for the predictions
     last_date = data['date'].iloc[-1]
     future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=forecast_time)
-
-    # Print out the future dates for debugging
-    print("Future Dates:", future_dates)
 
     # Separate historical data and future predictions
     historical_dates = data['date']
@@ -113,9 +97,9 @@ def predict_lstm(model_name, data, forecast_time):
     plot(historical_dates, historical_prices, future_dates, future_prices)
 
     # Prepare the historical and future data
-    history = [{"date": date.strftime('%Y-%m-%d'), "price": float(price)} for price, date in
+    history = [{"date": date.strftime('%Y-%m-%d'), "price": round(float(price), 2)} for price, date in
                zip(historical_prices, historical_dates)]
-    future = [{"date": date.strftime('%Y-%m-%d'), "price": float(price)} for price, date in
+    future = [{"date": date.strftime('%Y-%m-%d'), "price": round(float(price), 2)} for price, date in
               zip(future_prices, future_dates)]
 
     return history, future
