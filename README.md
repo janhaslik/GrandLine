@@ -1,94 +1,43 @@
-# Grand Line: Time-series Model Orchestration
+# Grand Line: Time-Series Models Platform
 
-Grand Line is a project designed to facilitate the creation, deployment, and management of machine learning models.
+Welcome to Grand Line, a platform designed for time-series modeling using LSTM and ARIMA models. This project combines the power of machine learning with a user-friendly interface to facilitate automatic model creation and deployment.
 
-## Dataset
+## Features
 
-The project utilizes the S&P 500 Daily dataset available on [Kaggle](https://www.kaggle.com/datasets/pdquant/sp500-daily-19862018). This dataset is for testing. A user can provide a own dataset. 
+- **LSTM and ARIMA Models**: Implemented using Keras and TensorFlow for accurate time-series forecasting.
+  
+- **Automatic Model Creation and Deployment**: Backend developed with Python Flask to automate the process of training models and deploying them seamlessly.
 
-## Installation and Setup
+- **Responsive Frontend**: Built with React TSX to provide an intuitive user interface. Users can upload datasets, initiate model training, and view forecasts effortlessly.
 
-To set up Grand Line, follow these steps:
+- **Database Management**: MySQL is utilized for efficient data storage and management.
 
-1. Clone the repository to your local machine.
-2. Install packages.
-3. Configure the database connection details in `data/db.py`.
-4. Have fun ;)
+## Components
 
-## Usage
+### Backend (Python Flask)
 
-### Registering Users
+The backend handles the core functionalities of the platform:
+- **Model Training**: Automatically trains LSTM and ARIMA models based on user-uploaded datasets.
+- **Deployment**: Provides endpoints for deploying trained models to generate forecasts.
+- **API Integration**: Supports integration with the frontend for seamless data flow and model execution.
 
-To register a new user, send a POST request to `/register` with the following JSON payload:
+### Frontend (React TSX)
 
-```json
-{
-    "username": "example_user",
-    "email": "user@example.com",
-    "password": "password123"
-}
-```
+The frontend offers a responsive interface accessible via web browsers:
+- **Dataset Upload**: Allows users to upload time-series datasets in various formats.
+- **Model Training**: Initiates training of LSTM and ARIMA models with just a few clicks.
+- **Forecast Visualization**: Displays forecasted results in an easy-to-understand format.
+- **User Management**: User authentication and session management functionalities.
 
-### Logging In
+### Database (MySQL)
 
-To log in, send a POST request to `/login` with the following JSON payload:
-
-```json
-{
-    "username": "example_user",
-    "password": "password123"
-}
-```
-
-### Creating Models
-
-To create a new machine learning model, send a POST request to `/models` with the following JSON payload:
-
-```json
-{
-    "model_name": "example_model",
-    "model_type": "LSTM",
-    "data_path": "path/to/data",
-    "userid": 1
-}
-```
-
-### Deploying Models
-
-To deploy a model for prediction, send a POST request to `/models/deploy` with the following JSON payload:
-
-```json
-{
-    "model_id": 1
-}
-```
-
-### Making Forecasts
-
-To make forecasts using a deployed model, send a POST request to `/models/forecast` with the following JSON payload:
-
-```json
-{
-    "timeline": 30,
-    "model_id": 1
-}
-```
-
-## Project Structure
-
-The project consists of the following components:
-
-- **app.py**: Flask application defining routes for user registration, login, model creation, deployment, and forecasting.
-- **model.py**: Contains classes for defining machine learning models, including LSTM_Model and ARIMA_Model.
-- **predict.py**: Implements functions for making predictions using deployed models.
-- **data/db.py**: Handles database interactions, including user authentication, model creation, and retrieval.
-
-## Running the Application
-
-To run the Grand Line application, execute `app.py` in your terminal. The Flask server will start, and you can then access the endpoints using a tool like cURL or by integrating with the provided APIs.
+MySQL is used for:
+- **Data Storage**: Storing uploaded datasets securely.
+- **Model Persistence**: Saving trained model parameters and metadata.
+- **Configuration Management**: Handling user preferences and system configurations.
 
 ## Contributors
 
 - [Jan Haslik](https://github.com/janhaslik)
 
-Feel free to contribute to this project by submitting pull requests or reporting issues. Happy modeling!
+Feel free to contribute to this project by submitting pull requests or reporting issues.
