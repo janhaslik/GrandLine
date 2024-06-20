@@ -10,32 +10,26 @@ from math import sqrt
 
 
 class LSTM_Model():
-    def __init__(self, name, data, sequence_length=50):
+    def __init__(self, name, data, sequence_length=50, date_field='date', output_field='close'):
         self.name = name
         self.data = data
         self.sequence_length = sequence_length
         self.data.dropna(inplace=True)
 
         # Calculate percentage returns
-        self.data['returns'] = self.data['close'].pct_change()
+        self.data['returns'] = self.data[output_field].pct_change()
         self.data.dropna(inplace=True)
 
         # Scale the 'close' prices along with the percentage returns
         self.scaler = StandardScaler()
-        self.scaled_data = self.scaler.fit_transform(data[['close', 'returns']].values)
+        self.scaled_data = self.scaler.fit_transform(data[[output_field, 'returns']].values)
 
         self.X, self.y = self.create_sequences(self.scaled_data, self.sequence_length)
+
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=0.2,
                                                                                 shuffle=False)
         self.model = self.build_model()
         self.history = None
-
-    def create_sequences(self, data, sequence_length):
-        X, y = [], []
-        for i in range(len(data) - sequence_length):
-            X.append(data[i:i + sequence_length])
-            y.append(data[i + sequence_length][1])  # Use the returns as the target
-        return np.array(X), np.array(y)
 
     def build_model(self):
         model = Sequential([
@@ -48,6 +42,13 @@ class LSTM_Model():
         ])
         model.compile(optimizer='adam', loss='mean_squared_error')
         return model
+
+    def create_sequences(self, data, sequence_length):
+        X, y = [], []
+        for i in range(len(data) - sequence_length):
+            X.append(data[i:i + sequence_length])
+            y.append(data[i + sequence_length][1])  # Use the returns as the target
+        return np.array(X), np.array(y)
 
     def train_model(self, epochs=30, batch_size=64):
         early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)

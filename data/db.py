@@ -31,6 +31,8 @@ def init():
                            "data_path varchar(255),"
                            "status enum('deployed', 'not deployed'),"
                            "user_id int,"
+                           "date_field varchar(255),"
+                           "output_field varchar(255),"
                            "foreign key (model_type_id) references model_types(id),"
                            "foreign key (user_id) references users(id)"
                            ");")
@@ -42,14 +44,16 @@ def init():
         try:
             static_types_statement = text("insert into model_types(model_type) values('ARIMA'),('LSTM');")
             connection.execute(static_types_statement)
+            connection.commit()
         except Exception as e:
             connection.rollback()
             pass
 
+
 init()
 
 
-def insert_model(model_name, model_type, data_path, user_id):
+def insert_model(model_name, model_type, data_path, user_id, date_field, output_field):
     with engine.connect() as connection:
         try:
             # Check if model_type exists in model_types table
@@ -62,11 +66,13 @@ def insert_model(model_name, model_type, data_path, user_id):
                 return {"status": "fail", "message": "Model type does not exist in the lookup table"}
 
             # Insert model with model_type_id
-            statement = text("INSERT INTO models(model_name, model_type_id, data_path, status, user_id) "
-                             "VALUES(:model_name, :model_type_id, :data_path, :status, :user_id)")
+            statement = text(
+                "INSERT INTO models(model_name, model_type_id, data_path, status, user_id, date_field, output_field) "
+                "VALUES(:model_name, :model_type_id, :data_path, :status, :user_id, :date_field, :output_field)")
 
             connection.execute(statement, {"model_name": model_name, "model_type_id": model_type_id,
-                                           "data_path": data_path, "status": "not deployed", "user_id": user_id})
+                                           "data_path": data_path, "status": "not deployed", "user_id": user_id,
+                                           "date_field": date_field, "output_field": output_field})
             connection.commit()
             # Retrieve the last inserted id
             result = connection.execute(text("select last_insert_id()")).fetchone()
@@ -122,7 +128,8 @@ def insert_user(username, email, password):
 
 def login_user(username_email, password):
     with engine.connect() as connection:
-        statement = text("SELECT id, hash, salt FROM users WHERE username = :username_email OR email = :username_email;")
+        statement = text(
+            "SELECT id, hash, salt FROM users WHERE username = :username_email OR email = :username_email;")
         result = connection.execute(statement, {"username_email": username_email}).fetchone()
 
         if result is None:
@@ -138,7 +145,7 @@ def login_user(username_email, password):
 def get_model(model_id):
     with engine.connect() as connection:
         statement = text(
-            "SELECT model_type, data_path FROM models inner join model_types on model_types.id=models.model_type_id WHERE models.id = :model_id")
+            "SELECT model_type, data_path, date_field, output_field FROM models inner join model_types on model_types.id=models.model_type_id WHERE models.id = :model_id")
 
         try:
             result = connection.execute(statement, {"model_id": model_id}).fetchone()
@@ -155,8 +162,6 @@ def get_models(userid):
 
         try:
             result = connection.execute(statement, {"userid": userid}).fetchall()
-            if len(result) == 0:
-                return 404
 
             models = [{"id": id, "model_name": model_name, "model_type": model_type, "status": status} for
                       id, model_name, model_type, status in result]
@@ -165,6 +170,7 @@ def get_models(userid):
         except Exception as e:
             print(e)
             return 403
+
 
 def delete_model(model_id, userid):
     with engine.connect() as connection:

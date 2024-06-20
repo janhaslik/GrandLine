@@ -28,7 +28,6 @@ async function getModels() {
 async function addModel(model: created_model) {
     try {
         const token = getToken();  // Get the JWT token from local storage
-        console.log(token)
         const response = await axios.post(`${baseURL}/models`, model, {
             headers: {
                 "Content-Type": "application/json",
@@ -76,8 +75,20 @@ async function register(username: string, email: string, password: string) {
     }
 }
 
-async function uploadDataset() {
-    // Implementation needed
+async function uploadDataset(formData: FormData) {
+    try {
+        const response = await axios.post(`${baseURL}/datasets`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        });
+
+        const dataPath = response.data.data_path;
+        return dataPath;
+    } catch (error) {
+        console.error("Failed to upload dataset", error);
+        throw error;
+    }
 }
 
 async function deployModel(id: number) {

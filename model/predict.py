@@ -12,7 +12,7 @@ def plot(historical_dates, historical_prices, future_dates, future_prices):
 
     plt.title('S&P 500 Prediction')
     plt.xlabel("Date")
-    plt.ylabel("Price")
+    plt.ylabel("Outcome")
     plt.legend()
     plt.xticks(rotation=45)
     plt.gca().xaxis.set_major_locator(plt.MaxNLocator(10))
@@ -20,15 +20,16 @@ def plot(historical_dates, historical_prices, future_dates, future_prices):
     plt.show()
 
 
-def predict_lstm(model_name, data, forecast_time):
+def predict_lstm(model_name, data, forecast_time, date_field='date', output_field='close'):
     # Load the trained model
     model = load_model(f'data/models/{model_name}.h5')
 
     # Convert date column to datetime
-    data['date'] = pd.to_datetime(data['date'])
+    data[date_field] = pd.to_datetime(data[date_field])
 
     # Calculate percentage returns
-    data['returns'] = data['close'].pct_change()
+    data['returns'] = data[output_field].pct_change()
+
     # Drop missing values
     data = data.dropna()
     print("Returns: ", data.head())
@@ -48,7 +49,7 @@ def predict_lstm(model_name, data, forecast_time):
 
     # Prepare the last sequence for prediction
     sequence_length = model.input_shape[1]
-    last_sequence = np.array(data[['close', 'returns']][-sequence_length:])
+    last_sequence = np.array(data[[output_field, 'returns']][-sequence_length:])
 
     # Ensure the sequence is in the correct shape
     last_sequence = last_sequence.reshape(1, sequence_length, 2)
@@ -58,7 +59,6 @@ def predict_lstm(model_name, data, forecast_time):
     for i in range(forecast_time):
         prediction = model.predict(last_sequence)
         future_predictions.append(prediction[0, 0])
-        print("Prediction:", prediction[0, 0])
 
         # Update the last sequence with the new prediction
         new_entry = np.array([last_sequence[0, -1, 0] * (1 + prediction[0, 0]), prediction[0, 0]])
@@ -73,33 +73,33 @@ def predict_lstm(model_name, data, forecast_time):
         print("NaN values found in future returns")
 
     # Derive future prices from predicted returns
-    last_close = data['close'].iloc[-1]
-    future_prices = [last_close]
+    last_output = data[output_field].iloc[-1]
+    future_outputs = [last_output]
     for return_val in future_returns:
-        future_prices.append(future_prices[-1] * (1 + return_val))
+        future_outputs.append(future_outputs[-1] * (1 + return_val))
 
     # Remove the first element (the last known close price)
-    future_prices = future_prices[1:]
+    future_outputs = future_outputs[1:]
 
     # Check if future prices contain NaN values
-    if np.isnan(future_prices).any():
+    if np.isnan(future_outputs).any():
         print("NaN values found in future prices")
 
     # Generate future dates for the predictions
-    last_date = data['date'].iloc[-1]
+    last_date = data[date_field].iloc[-1]
     future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=forecast_time)
 
     # Separate historical data and future predictions
-    historical_dates = data['date']
-    historical_prices = data['close']
+    historical_dates = data[date_field]
+    historical_outputs = data[output_field]
 
     # Plot combined data
-    plot(historical_dates, historical_prices, future_dates, future_prices)
+    plot(historical_dates, historical_outputs, future_dates, future_outputs)
 
     # Prepare the historical and future data
     history = [{"date": date.strftime('%Y-%m-%d'), "price": round(float(price), 2)} for price, date in
-               zip(historical_prices, historical_dates)]
+               zip(historical_outputs, historical_dates)]
     future = [{"date": date.strftime('%Y-%m-%d'), "price": round(float(price), 2)} for price, date in
-              zip(future_prices, future_dates)]
+              zip(future_outputs, future_dates)]
 
     return history, future

@@ -65,12 +65,15 @@ def create_model():
         model_name = request.json['model_name']
         model_type = request.json['model_type']
         data_path = request.json['data_path']
+        date_field = request.json['data_date']
+        output_field = request.json['data_output']
 
         userid = get_jwt_identity()
 
         if model_type in model_types:
+
             # Add to db
-            res = db.insert_model(model_name, model_type, data_path, userid)
+            res = db.insert_model(model_name, model_type, data_path, userid, date_field, output_field)
             if res["status"] == "success":
                 return jsonify({"status": "Model created successfully", "model_id": res["model_id"]}), 200
             else:
@@ -91,8 +94,6 @@ def get_models():
 
     if models == 403:
         return jsonify({"status": "fail", "message": "You do not have permission to access this resource"}), 403
-    elif models == 404:
-        return jsonify({"status": "fail", "message": "No models found"}), 404
 
     return jsonify({"status": "success", "models": models}), 200
 
@@ -116,21 +117,34 @@ def delete_model():
         return jsonify({"status": "fail", "message": f"An error occurred: {e}"}), 500
 
 
-@app.route('/api/models/dataset', methods=['POST'])
+@app.route('/api/datasets', methods=['POST'])
 def upload_dataset():
+    if 'dataset' in request.files:
+        file = request.files['dataset']
+        filename = file.filename
+        directory = 'data/datasets'
 
-    return jsonify({"status": "success", "message": "Dataset uploaded successfully"}), 200
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        filepath = os.path.join(directory, filename)
+        try:
+            file.save(filepath)
+            return jsonify(
+                {"status": "success", "message": "Dataset uploaded successfully", "data_path": filepath}), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify({"status": "not found", "message": "Dataset not found in request"}), 404
 
 
 @app.route('/api/models/deploy', methods=['POST'])
 @jwt_required()
 def deploy():
     model_id = request.json['model_id']
-    model_type, data_path = db.get_model(model_id)
-    data_path = "spx.csv"
+    model_type, data_path, date_field, output_field = db.get_model(model_id)
     data = pd.read_csv(data_path)
     model_class = model_types[model_type]
-    model_instance = model_class(model_id, data)
+    model_instance = model_class(name=model_id, data=data, date_field=date_field, output_field=output_field)
     model_instance.train_model()
 
     # Set status in db to deployed
@@ -145,14 +159,14 @@ def forecast():
     timeline = request.json['timeline']
     model_id = request.json['model_id']
 
-    model_type, data_path = db.get_model(model_id)
+    model_type, data_path, date_field, output_field = db.get_model(model_id)
     data_path = "spx.csv"
 
     if model_type is not None and data_path is not None:
         data = pd.read_csv(data_path)
 
         if model_type == 'LSTM':
-            history, predictions = predict.predict_lstm(model_id, data, int(timeline))
+            history, predictions = predict.predict_lstm(model_id, data, int(timeline), date_field, output_field)
             return jsonify({"predictions": predictions, "history": history}), 200
 
         return jsonify({"error": "Invalid Model Type"})

@@ -9,6 +9,7 @@
 .DS_Store
 **/.keras
 **/.h5
+**/.csv
 
 **/node_modules
 static

@@ -1,11 +1,13 @@
 import { Modal, Backdrop, Fade, Box, Typography, TextField, MenuItem } from "@mui/material";
 import Model from "../../interfaces/created_model";
 import { useState } from "react";
+import service from "../../services/service";
 
-export default function NewModel({ onAddModel }: { onAddModel: (model: Model) => void }) {
+export default function NewModel({ onAddModel }: { onAddModel: (model: Model) => void}) {
     const userid = "1" //localStorage.getItem("userid")
     const [open, setOpen] = useState(false);
-    const [newModel, setNewModel] = useState<Model>({ model_name: "", model_type: "", data_path: "", userid: parseInt(userid) });
+    const [newModel, setNewModel] = useState<Model>({ model_name: "", model_type: "", data_path: "", userid: parseInt(userid), data_date: "", data_output: "" });
+    const [file, setFile] = useState<File | null>(null)
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -35,10 +37,28 @@ export default function NewModel({ onAddModel }: { onAddModel: (model: Model) =>
         });
     }
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if(e.target.files){
+            setFile(e.target.files[0])
+        }
+    }
+
     const handleAddModel = async () => {
         try {
-            onAddModel(newModel); // Call the onAddModel callback with the new model
-            handleClose()
+            if(file){
+                const formData = new FormData()
+                formData.append('dataset', file)
+                
+                const data_path=await service.uploadDataset(formData)
+                
+                const addModel={
+                    ...newModel,
+                    data_path: data_path
+                }
+
+                onAddModel(addModel);
+                handleClose()
+            }
         } catch (error) {
             console.error("Failed to add model", error);
         }
@@ -91,12 +111,12 @@ export default function NewModel({ onAddModel }: { onAddModel: (model: Model) =>
                         <TextField
                             type="file"
                             name="data_path"
-                            onChange={handleModelChange}
+                            onChange={handleFileChange}
                             sx={{ mt: 2 }}
                         />
                         <Box display="flex" flexDirection="row" gap={2} sx={{mt: 2}}>
-                            <TextField type="text" name="data_date" label="Date Field"/>
-                            <TextField type="text" name="data_output" label="Output "/>
+                            <TextField type="text" name="data_date" label="Date Field" onChange={handleModelChange}/>
+                            <TextField type="text" name="data_output" label="Output Field" onChange={handleModelChange}/>
                         </Box>
                         <button className="add-model" onClick={handleAddModel}>Add Model</button>
                     </Box>
