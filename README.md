@@ -17,7 +17,7 @@ Welcome to Grand Line, a platform designed for time-series modeling using LSTM m
 ### Backend (Python Flask)
 
 The backend handles the core functionalities of the platform:
-- **Model Training**: Automatically trains LSTM and ARIMA models based on user-uploaded datasets.
+- **Model Training**: Automatically trains LSTM models based on user-uploaded datasets.
 - **Deployment**: Provides endpoints for deploying trained models to generate forecasts.
 - **API Integration**: Supports integration with the frontend for seamless data flow and model execution.
 
