@@ -1,10 +1,10 @@
 # Grand Line: Time-Series Models Platform
 
-Welcome to Grand Line, a platform designed for time-series modeling using LSTM and ARIMA models. This project combines the power of machine learning with a user-friendly interface to facilitate automatic model creation and deployment.
+Welcome to Grand Line, a platform designed for time-series modeling using LSTM models. This project combines the power of machine learning with a user-friendly interface to facilitate automatic model creation and deployment.
 
 ## Features
 
-- **LSTM and ARIMA Models**: Implemented using Keras and TensorFlow for accurate time-series forecasting.
+- **LSTM Models**: Implemented using Keras and TensorFlow for accurate time-series forecasting.
   
 - **Automatic Model Creation and Deployment**: Backend developed with Python Flask to automate the process of training models and deploying them seamlessly.
 
@@ -24,17 +24,12 @@ The backend handles the core functionalities of the platform:
 ### Frontend (React TSX)
 
 The frontend offers a responsive interface accessible via web browsers:
-- **Dataset Upload**: Allows users to upload time-series datasets in various formats.
-- **Model Training**: Initiates training of LSTM and ARIMA models with just a few clicks.
+- **Dataset Upload**: Allows users to upload time-series datasets in csv format.
+- **Model Training**: Initiates training of LSTM models with just a few clicks.
 - **Forecast Visualization**: Displays forecasted results in an easy-to-understand format.
 - **User Management**: User authentication and session management functionalities.
 
 ### Database (MySQL)
-
-MySQL is used for:
-- **Data Storage**: Storing uploaded datasets securely.
-- **Model Persistence**: Saving trained model parameters and metadata.
-- **Configuration Management**: Handling user preferences and system configurations.
 
 ## Contributors
 
